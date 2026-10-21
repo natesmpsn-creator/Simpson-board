@@ -31,7 +31,7 @@ export default function Home() {
       ])
 
       if (familyRes.data) {
-        const customOrder = ['Brooke', 'Joe', 'Nathan', 'Nick', 'Bells', 'Cammi']
+        const customOrder = ['Brooke', 'Joe', 'Nathan', 'Nick', 'Bella', 'Cammi']
         const sorted = familyRes.data.sort((a: any, b: any) => {
           const indexA = customOrder.indexOf(a.name)
           const indexB = customOrder.indexOf(b.name)
