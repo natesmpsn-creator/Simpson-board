@@ -163,10 +163,15 @@ export default function AdminPanel({
   }
 
   const addRecurringAssignment = async () => {
-    if (!newRecurring.chore_id || !newRecurring.assigned_to || !newRecurring.start_date) return
+    console.log('addRecurringAssignment called with:', newRecurring)
+    if (!newRecurring.chore_id || !newRecurring.assigned_to || !newRecurring.start_date) {
+      console.log('Missing required fields')
+      return
+    }
     try {
+      console.log('Inserting recurring assignment...')
       // Save the recurring rule
-      const { data: recData } = await supabase
+      const { data: recData, error: recError } = await supabase
         .from('recurring_assignments')
         .insert({
           chore_id: newRecurring.chore_id,
@@ -176,10 +181,24 @@ export default function AdminPanel({
         })
         .select()
 
+      if (recError) {
+        console.error('Error inserting recurring rule:', recError)
+        return
+      }
+
+      console.log('Recurring rule inserted:', recData)
+
       // Generate actual assignments for the next 30 days
       const generatedAssignments = await generateAssignmentsFromRecurring(newRecurring)
-      await supabase.from('assignments').insert(generatedAssignments)
+      console.log('Generated assignments:', generatedAssignments)
 
+      const { error: assignError } = await supabase.from('assignments').insert(generatedAssignments)
+      if (assignError) {
+        console.error('Error inserting assignments:', assignError)
+        return
+      }
+
+      console.log('All assignments inserted successfully')
       setNewRecurring({ chore_id: '', assigned_to: '', frequency: 'daily', start_date: '' })
       onDataChange()
     } catch (error) {

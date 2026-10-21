@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import ChoreBoard from '@/components/ChoreBoard'
 import Calendar from '@/components/Calendar'
@@ -15,6 +15,10 @@ export default function Home() {
   const [recurringAssignments, setRecurringAssignments] = useState<any[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [showAdmin, setShowAdmin] = useState(false)
+
+  useEffect(() => {
+    loadData()
+  }, [])
 
   const loadData = async () => {
     try {
