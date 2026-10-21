@@ -30,7 +30,15 @@ export default function Home() {
         supabase.from('recurring_assignments').select('*'),
       ])
 
-      if (familyRes.data) setFamilyMembers(familyRes.data)
+      if (familyRes.data) {
+        const customOrder = ['Brooke', 'Joe', 'Nathan', 'Nick', 'Bells', 'Cammi']
+        const sorted = familyRes.data.sort((a: any, b: any) => {
+          const indexA = customOrder.indexOf(a.name)
+          const indexB = customOrder.indexOf(b.name)
+          return indexA - indexB
+        })
+        setFamilyMembers(sorted)
+      }
       if (choresRes.data) setChores(choresRes.data)
       if (assignmentsRes.data) setAssignments(assignmentsRes.data)
       if (eventsRes.data) setEvents(eventsRes.data)
