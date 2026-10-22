@@ -21,6 +21,7 @@ export default function ChoreBoard({
   selectedDate,
 }: ChoreBoardProps) {
   const [selectedMember, setSelectedMember] = useState<string | null>(null)
+  const [draggedAssignment, setDraggedAssignment] = useState<any | null>(null)
 
   const toggleChore = async (assignmentId: string, currentStatus: boolean) => {
     try {
@@ -31,6 +32,18 @@ export default function ChoreBoard({
       onUpdate()
     } catch (error) {
       console.error('Error updating chore:', error)
+    }
+  }
+
+  const reassignChore = async (assignmentId: string, newMemberId: string) => {
+    try {
+      await supabase
+        .from('assignments')
+        .update({ assigned_to: newMemberId })
+        .eq('id', assignmentId)
+      onUpdate()
+    } catch (error) {
+      console.error('Error reassigning chore:', error)
     }
   }
 
@@ -113,11 +126,45 @@ export default function ChoreBoard({
                       a => a.assigned_to === member.id && a.due_date === selectedDate
                     )
                     return (
-                      <td key={member.id} className="border border-gray-300 px-4 py-3 text-center">
+                      <td
+                        key={member.id}
+                        className={`border border-gray-300 px-4 py-3 text-center transition ${
+                          draggedAssignment && draggedAssignment.chore_id === chore.id
+                            ? 'bg-indigo-50'
+                            : ''
+                        }`}
+                        onDragOver={(e) => {
+                          if (draggedAssignment?.chore_id === chore.id) {
+                            e.preventDefault()
+                            e.currentTarget.style.backgroundColor = '#e0e7ff'
+                          }
+                        }}
+                        onDragLeave={(e) => {
+                          if (draggedAssignment?.chore_id === chore.id) {
+                            e.currentTarget.style.backgroundColor = ''
+                          }
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault()
+                          if (
+                            draggedAssignment &&
+                            draggedAssignment.chore_id === chore.id &&
+                            draggedAssignment.assigned_to !== member.id
+                          ) {
+                            reassignChore(draggedAssignment.id, member.id)
+                            setDraggedAssignment(null)
+                          }
+                        }}
+                      >
                         {assignment ? (
                           <button
+                            draggable
+                            onDragStart={() => setDraggedAssignment(assignment)}
+                            onDragEnd={() => setDraggedAssignment(null)}
                             onClick={() => toggleChore(assignment.id, assignment.completed)}
-                            className={`w-8 h-8 rounded-full border-2 transition flex items-center justify-center mx-auto ${
+                            className={`w-8 h-8 rounded-full border-2 transition flex items-center justify-center mx-auto cursor-grab active:cursor-grabbing ${
+                              draggedAssignment?.id === assignment.id ? 'opacity-50' : ''
+                            } ${
                               assignment.completed
                                 ? 'bg-green-500 border-green-600 text-white'
                                 : 'border-gray-300 hover:border-indigo-500'
