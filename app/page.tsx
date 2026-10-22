@@ -23,13 +23,38 @@ export default function Home() {
 
   const loadData = async () => {
     try {
-      const [familyRes, choresRes, assignmentsRes, eventsRes, recurringRes] = await Promise.all([
+      const [familyRes, choresRes, eventsRes, recurringRes] = await Promise.all([
         supabase.from('family_members').select('*'),
         supabase.from('chores').select('*'),
-        supabase.from('assignments').select('*').order('due_date'),
         supabase.from('calendar_events').select('*'),
         supabase.from('recurring_assignments').select('*'),
       ])
+
+      // Load all assignments with pagination to avoid 1000 row limit
+      let allAssignments: any[] = []
+      let page = 0
+      let hasMore = true
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('assignments')
+          .select('*')
+          .order('due_date')
+          .range(page * 1000, (page + 1) * 1000 - 1)
+
+        if (error) {
+          console.error('Error loading assignments page', page, ':', error)
+          break
+        }
+
+        if (data && data.length > 0) {
+          allAssignments = allAssignments.concat(data)
+          hasMore = data.length === 1000
+          page++
+        } else {
+          hasMore = false
+        }
+      }
 
       if (familyRes.data) {
         const customOrder = ['Brooke', 'Joe', 'Nae', 'Nick', 'Bella', 'Cammi']
@@ -41,7 +66,7 @@ export default function Home() {
         setFamilyMembers(sorted)
       }
       if (choresRes.data) setChores(choresRes.data)
-      if (assignmentsRes.data) setAssignments(assignmentsRes.data)
+      setAssignments(allAssignments)
       if (eventsRes.data) setEvents(eventsRes.data)
       if (recurringRes.data) setRecurringAssignments(recurringRes.data)
     } catch (error) {
