@@ -146,6 +146,12 @@ export default function AdminPanel({
         shouldAssign = dayOfWeek > 0 && dayOfWeek < 6
       } else if (recRule.frequency === 'weekend') {
         shouldAssign = dayOfWeek === 0 || dayOfWeek === 6
+      } else if (recRule.frequency === 'every_3_days') {
+        shouldAssign = i % 3 === 0
+      } else if (recRule.frequency === 'twice_a_week') {
+        shouldAssign = dayOfWeek === 1 || dayOfWeek === 4
+      } else if (recRule.frequency === 'once_a_week') {
+        shouldAssign = dayOfWeek === 1
       }
 
       if (shouldAssign) {
@@ -390,6 +396,9 @@ export default function AdminPanel({
           >
             <option value="daily">Every Day</option>
             <option value="every_other_day">Every Other Day</option>
+            <option value="every_3_days">Every 3 Days</option>
+            <option value="twice_a_week">Twice a Week (Mon/Thu)</option>
+            <option value="once_a_week">Once a Week (Mondays)</option>
             <option value="weekday">Weekdays (Mon-Fri)</option>
             <option value="weekend">Weekends (Sat-Sun)</option>
           </select>
