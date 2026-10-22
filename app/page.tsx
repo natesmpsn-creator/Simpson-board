@@ -22,10 +22,11 @@ export default function Home() {
 
   const loadData = async () => {
     try {
+      const today = new Date().toISOString().split('T')[0]
       const [familyRes, choresRes, assignmentsRes, eventsRes, recurringRes] = await Promise.all([
         supabase.from('family_members').select('*'),
         supabase.from('chores').select('*'),
-        supabase.from('assignments').select('*'),
+        supabase.from('assignments').select('*').eq('due_date', today),
         supabase.from('calendar_events').select('*'),
         supabase.from('recurring_assignments').select('*'),
       ])
