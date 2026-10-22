@@ -6,9 +6,11 @@ import { useState, useEffect } from 'react'
 
 interface CalendarProps {
   events: any[]
+  onDateSelect: (date: string) => void
+  selectedDate: string
 }
 
-export default function Calendar({ events }: CalendarProps) {
+export default function Calendar({ events, onDateSelect, selectedDate }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState<Date | null>(null)
 
   useEffect(() => {
@@ -84,27 +86,45 @@ export default function Calendar({ events }: CalendarProps) {
           </div>
         ))}
 
-        {days.map((day, idx) => (
-          <div
-            key={idx}
-            className={`border rounded-lg p-2 text-sm min-h-20 ${
-              day ? 'bg-gray-50 border-gray-200' : 'bg-gray-100 border-gray-100'
-            }`}
-          >
-            {day && (
-              <>
-                <div className="font-semibold text-gray-700 mb-1">{day}</div>
-                <div className="space-y-1">
-                  {getEventsForDate(day).map(event => (
-                    <div key={event.id} className={`text-xs p-1 rounded ${getTypeColor(event.type)}`}>
-                      {event.title}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+        {days.map((day, idx) => {
+          const dateStr = day
+            ? `${displayDate.getFullYear()}-${String(displayDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+            : null
+          const isSelected = dateStr === selectedDate
+
+          return (
+            <button
+              key={idx}
+              onClick={() => dateStr && onDateSelect(dateStr)}
+              disabled={!day}
+              className={`border rounded-lg p-2 text-sm min-h-20 text-left transition ${
+                !day
+                  ? 'bg-gray-100 border-gray-100 cursor-default'
+                  : isSelected
+                  ? 'bg-indigo-600 border-indigo-700 text-white'
+                  : 'bg-gray-50 border-gray-200 hover:border-indigo-400 cursor-pointer'
+              }`}
+            >
+              {day && (
+                <>
+                  <div className={`font-semibold mb-1 ${isSelected ? 'text-white' : 'text-gray-700'}`}>{day}</div>
+                  <div className="space-y-1">
+                    {getEventsForDate(day).map(event => (
+                      <div
+                        key={event.id}
+                        className={`text-xs p-1 rounded ${
+                          isSelected ? 'bg-indigo-500 text-white' : getTypeColor(event.type)
+                        }`}
+                      >
+                        {event.title}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </button>
+          )
+        })}
       </div>
     </div>
   )

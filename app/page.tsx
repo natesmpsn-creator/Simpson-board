@@ -15,6 +15,7 @@ export default function Home() {
   const [recurringAssignments, setRecurringAssignments] = useState<any[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [showAdmin, setShowAdmin] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
 
   useEffect(() => {
     loadData()
@@ -22,11 +23,10 @@ export default function Home() {
 
   const loadData = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0]
       const [familyRes, choresRes, assignmentsRes, eventsRes, recurringRes] = await Promise.all([
         supabase.from('family_members').select('*'),
         supabase.from('chores').select('*'),
-        supabase.from('assignments').select('*').eq('due_date', today),
+        supabase.from('assignments').select('*').order('due_date'),
         supabase.from('calendar_events').select('*'),
         supabase.from('recurring_assignments').select('*'),
       ])
@@ -81,10 +81,11 @@ export default function Home() {
                 assignments={assignments}
                 familyMembers={familyMembers}
                 onUpdate={loadData}
+                selectedDate={selectedDate}
               />
             </div>
             <div className="lg:col-span-1">
-              <Calendar events={events} />
+              <Calendar events={events} onDateSelect={setSelectedDate} selectedDate={selectedDate} />
             </div>
           </div>
         )}
